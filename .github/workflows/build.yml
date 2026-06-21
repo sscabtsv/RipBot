@@ -37,7 +37,7 @@ jobs:
           mkdir -p $HOME/.geode
           mkdir -p $HOME/fake-gd-profile
 
-          geode profile add $HOME/fake-gd-profile --name ci --default
+          geode profile add --name ci $HOME/fake-gd-profile
 
       - name: Install Geode SDK
         run: |
