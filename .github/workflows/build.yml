@@ -15,21 +15,30 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build git curl
+          sudo apt-get install -y cmake ninja-build git curl unzip
 
       - name: Setup Geode CLI
         run: |
+          set -e
+
           URL=$(curl -s https://api.github.com/repos/geode-sdk/cli/releases/latest \
             | grep "browser_download_url" \
             | grep "linux" \
+            | grep ".zip" \
             | cut -d '"' -f 4)
 
           echo "Downloading: $URL"
-          curl -L $URL -o geode.tar.gz
+          curl -L "$URL" -o geode.zip
 
-          tar -xzf geode.tar.gz
+          unzip -o geode.zip
 
-          sudo mv geode /usr/local/bin/geode
+          # find actual executable safely
+          BIN=$(find . -type f -name "geode*" -perm -111 | head -n 1)
+
+          echo "Found binary: $BIN"
+
+          chmod +x "$BIN"
+          sudo mv "$BIN" /usr/local/bin/geode
 
           geode --version
 
