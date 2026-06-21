@@ -1,0 +1,47 @@
+name: Build Geode Mod
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build git
+
+      - name: Setup Geode CLI
+        run: |
+          curl -L https://github.com/geode-sdk/cli/releases/latest/download/geode-linux.tar.gz -o geode.tar.gz
+          tar -xzf geode.tar.gz
+          sudo mv geode /usr/local/bin/geode
+          geode --version
+
+      - name: Configure build
+        run: |
+          mkdir build
+          cd build
+          cmake .. -G Ninja
+
+      - name: Build mod
+        run: |
+          cd build
+          ninja
+
+      - name: Package mod
+        run: |
+          cd build
+          geode package
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RipBot-geode
+          path: build/*.geode
