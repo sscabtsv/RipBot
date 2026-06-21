@@ -17,36 +17,24 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y cmake ninja-build git curl unzip
 
-      - name: Setup Geode CLI
+      - name: Install Geode CLI
         run: |
-          set -e
-
-          URL=$(curl -s https://api.github.com/repos/geode-sdk/cli/releases/latest \
-            | grep "browser_download_url" \
-            | grep "linux" \
-            | grep ".zip" \
-            | cut -d '"' -f 4)
-
-          echo "Downloading: $URL"
-          curl -L "$URL" -o geode.zip
-
-          unzip -o geode.zip
-
-          # find actual executable safely
-          BIN=$(find . -type f -name "geode*" -perm -111 | head -n 1)
-
-          echo "Found binary: $BIN"
-
-          chmod +x "$BIN"
-          sudo mv "$BIN" /usr/local/bin/geode
-
+          curl -L https://github.com/geode-sdk/cli/releases/latest/download/geode-cli-linux.zip -o geode.zip
+          unzip geode.zip
+          chmod +x geode
+          sudo mv geode /usr/local/bin/geode
           geode --version
+
+      - name: Setup Geode SDK
+        run: |
+          mkdir -p $HOME/.geode
+          geode sdk install
 
       - name: Configure build
         run: |
           mkdir -p build
           cd build
-          cmake .. -G Ninja
+          cmake .. -G Ninja -DGeode_DIR=$HOME/.geode/sdk
 
       - name: Build mod
         run: |
