@@ -34,3 +34,4 @@ jobs:
         with:
           combine: true
           target: ${{ matrix.config.target }}
+          configure-args: -DCMAKE_CXX_FLAGS="-include sys/timeb.h"
