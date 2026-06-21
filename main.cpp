@@ -13,39 +13,47 @@ class $modify(RipBotPlayLayer, PlayLayer) {
         
         auto manager = MacroManager::get();
         manager->currentFrame = 0;
+        manager->timeAccumulator = 0.0;
         manager->playbackIndex = 0;
         
         return true;
     }
 
-    void postUpdate(float dt) {
-        PlayLayer::postUpdate(dt);
-        
+    void update(float dt) {
         auto manager = MacroManager::get();
-        manager->currentFrame++;
+        const double fixedDelta = 1.0 / 240.0; // Fixed 240fps deterministic step
         
-        if (manager->isPlaying()) {
-            while (manager->playbackIndex < manager->events.size()) {
-                const auto& event = manager->events[manager->playbackIndex];
-                
-                if (event.frame == manager->currentFrame) {
-                    if (event.push) {
-                        PlayLayer::pushButton(event.button, event.player2);
+        manager->timeAccumulator += dt;
+
+        while (manager->timeAccumulator >= fixedDelta) {
+            manager->currentFrame++;
+            
+            if (manager->isPlaying()) {
+                while (manager->playbackIndex < manager->events.size()) {
+                    const auto& event = manager->events[manager->playbackIndex];
+                    
+                    if (event.frame == manager->currentFrame) {
+                        if (event.push) {
+                            this->PlayLayer::pushButton(event.button, event.player2);
+                        } else {
+                            this->PlayLayer::releaseButton(event.button, event.player2);
+                        }
+                        manager->playbackIndex++;
+                    } else if (event.frame > manager->currentFrame) {
+                        break; // Future event, wait for next frames
                     } else {
-                        PlayLayer::releaseButton(event.button, event.player2);
+                        manager->playbackIndex++; // Skip missed/past events to catch up
                     }
-                    manager->playbackIndex++;
-                } else if (event.frame > manager->currentFrame) {
-                    break;
-                } else {
-                    manager->playbackIndex++;
                 }
             }
+            manager->timeAccumulator -= fixedDelta;
         }
+
+        PlayLayer::update(dt);
     }
 
     void pushButton(int button, bool player2) {
-        PlayLayer::pushButton(button, player2);
+        this->PlayLayer::pushButton(button, player2);
         
         auto manager = MacroManager::get();
         if (manager->isRecording()) {
@@ -54,7 +62,7 @@ class $modify(RipBotPlayLayer, PlayLayer) {
     }
 
     void releaseButton(int button, bool player2) {
-        PlayLayer::releaseButton(button, player2);
+        this->PlayLayer::releaseButton(button, player2);
         
         auto manager = MacroManager::get();
         if (manager->isRecording()) {
