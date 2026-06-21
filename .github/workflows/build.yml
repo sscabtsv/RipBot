@@ -32,9 +32,15 @@ jobs:
 
           geode --version
 
-      - name: Install Geode SDK
+      - name: Set up dummy Geode profile
         run: |
           mkdir -p $HOME/.geode
+          mkdir -p $HOME/fake-gd-profile
+
+          geode profile add $HOME/fake-gd-profile --name ci --default
+
+      - name: Install Geode SDK
+        run: |
           geode sdk install $HOME/.geode/sdk
 
           echo "GEODE_SDK=$HOME/.geode/sdk" >> $GITHUB_ENV
