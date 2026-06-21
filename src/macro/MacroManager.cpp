@@ -1,18 +1,12 @@
-#pragma once
+#include "MacroManager.hpp"
 
-class MacroManager {
-private:
-    bool m_isRecording = false;
-    bool m_isPlaying = false;
+MacroManager* MacroManager::get() {
+    static MacroManager instance;
+    return &instance;
+}
 
-    MacroManager() = default;
+bool MacroManager::isRecording() const { return m_isRecording; }
+void MacroManager::setRecording(bool state) { m_isRecording = state; }
 
-public:
-    static MacroManager* get();
-
-    bool isRecording() const;
-    void setRecording(bool state);
-
-    bool isPlaying() const;
-    void setPlaying(bool state);
-};
+bool MacroManager::isPlaying() const { return m_isPlaying; }
+void MacroManager::setPlaying(bool state) { m_isPlaying = state; }
