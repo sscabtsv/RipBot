@@ -32,19 +32,16 @@ jobs:
 
           geode --version
 
-      - name: Initialize Geode config (fix crash)
-        run: |
-          mkdir -p $HOME/.geode
-
-          yes "" | geode config setup || true
-
       - name: Install Geode SDK
         run: |
-          geode sdk install || true
+          mkdir -p $HOME/.geode
+          geode sdk install $HOME/.geode/sdk
+
+          echo "GEODE_SDK=$HOME/.geode/sdk" >> $GITHUB_ENV
 
       - name: Verify SDK exists
         run: |
-          ls -la $HOME/.geode || true
+          ls -la "$GEODE_SDK" || true
 
       - name: Configure CMake
         run: |
@@ -53,7 +50,7 @@ jobs:
 
           cmake .. -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
-            -DGeode_DIR=$HOME/.geode/sdk || cmake .. -G Ninja
+            -DGeode_DIR="$GEODE_SDK"
 
       - name: Build mod
         run: |
