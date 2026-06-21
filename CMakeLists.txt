@@ -1,6 +1,14 @@
-cmake_minimum_required(VERSION 3.27.9)
+cmake_minimum_required(VERSION 3.21)
+
 project(RipBot VERSION 1.0.0)
-find_package(Geode REQUIRED)
+
+if (NOT DEFINED ENV{GEODE_SDK})
+    message(FATAL_ERROR "Unable to find Geode SDK! Please define GEODE_SDK environment variable to point to Geode")
+else()
+    message(STATUS "Found Geode: $ENV{GEODE_SDK}")
+endif()
+
+add_subdirectory($ENV{GEODE_SDK} ${CMAKE_CURRENT_BINARY_DIR}/geode)
 
 file(GLOB_RECURSE SRC_FILES
     "*.cpp"
@@ -8,4 +16,5 @@ file(GLOB_RECURSE SRC_FILES
 )
 
 add_library(${PROJECT_NAME} MODULE ${SRC_FILES})
+
 setup_geode_mod(${PROJECT_NAME})
