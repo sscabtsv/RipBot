@@ -12,61 +12,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake ninja-build git curl unzip python3
-
-      - name: Install Geode CLI (safe)
-        run: |
-          DOWNLOAD_URL=$(curl -s https://api.github.com/repos/geode-sdk/cli/releases/latest \
-            | grep "browser_download_url.*linux.zip" \
-            | cut -d '"' -f 4)
-
-          echo "Downloading: $DOWNLOAD_URL"
-          curl -L "$DOWNLOAD_URL" -o geode.zip
-          unzip -o geode.zip
-
-          chmod +x geode
-          sudo mv geode /usr/local/bin/geode
-
-          geode --version
-
-      - name: Set up dummy Geode profile
-        run: |
-          mkdir -p $HOME/.geode
-          mkdir -p $HOME/fake-gd-profile
-
-          geode profile add --name ci $HOME/fake-gd-profile
-
-      - name: Install Geode SDK
-        run: |
-          geode sdk install $HOME/.geode/sdk
-
-          echo "GEODE_SDK=$HOME/.geode/sdk" >> $GITHUB_ENV
-
-      - name: Verify SDK exists
-        run: |
-          ls -la "$GEODE_SDK" || true
-
-      - name: Configure CMake
-        run: |
-          mkdir -p build
-          cd build
-
-          cmake .. -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DGeode_DIR="$GEODE_SDK"
-
       - name: Build mod
-        run: |
-          cd build
-          ninja
-
-      - name: Package mod
-        run: |
-          cd build
-          geode package
+        uses: geode-sdk/build-geode-mod@main
+        with:
+          combine: true
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
