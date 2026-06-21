@@ -37,3 +37,4 @@ void MacroManager::addEvent(int button, bool player2, bool push) {
         player2,
         push
     });
+}
